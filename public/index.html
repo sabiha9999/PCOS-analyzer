@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PCOS Risk Assessment</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rose: #d4687c;
+    --rose-light: #f0b8c3;
+    --rose-dark: #9e3f54;
+    --cream: #fdf7f2;
+    --warm-grey: #8a7a75;
+    --charcoal: #2c2420;
+    --blush: #f5dde4;
+    --sage: #8fada0;
+    --sage-light: #d4e8e2;
+    --ink: #1a1412;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    background: var(--cream);
+    color: var(--charcoal);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 15% 10%, rgba(212,104,124,0.09) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 85% 90%, rgba(143,173,160,0.10) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 60% 30%, rgba(245,221,228,0.18) 0%, transparent 50%);
+    pointer-events: none; z-index: 0;
+  }
+
+  .container {
+    position: relative; z-index: 1;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 60px 24px 100px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 64px;
+    animation: fadeDown .8s ease both;
+  }
+
+  .eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--rose);
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    font-size: clamp(2.6rem, 6vw, 4rem);
+    font-weight: 300;
+    line-height: 1.1;
+    color: var(--ink);
+    margin-bottom: 16px;
+  }
+
+  h1 em { font-style: italic; color: var(--rose-dark); }
+
+  .subtitle {
+    font-size: 1.05rem;
+    color: var(--warm-grey);
+    max-width: 440px;
+    margin: 0 auto;
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  .progress-bar {
+    width: 100%; height: 3px;
+    background: var(--blush);
+    border-radius: 2px;
+    margin-bottom: 48px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--rose-dark), var(--rose));
+    border-radius: 2px;
+    transition: width .5s cubic-bezier(.4,0,.2,1);
+    width: 0%;
+  }
+
+  .step-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .15em;
+    color: var(--warm-grey);
+    text-align: right;
+    margin-top: -40px;
+    margin-bottom: 40px;
+  }
+
+  .question-card {
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(212,104,124,0.15);
+    border-radius: 20px;
+    padding: 48px 44px;
+    box-shadow: 0 4px 40px rgba(212,104,124,0.06), 0 1px 0 rgba(255,255,255,0.8) inset;
+  }
+
+  .question-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .2em;
+    color: var(--rose);
+    margin-bottom: 12px;
+  }
+
+  .question-text {
+    font-size: 1.45rem;
+    font-weight: 400;
+    line-height: 1.45;
+    color: var(--ink);
+    margin-bottom: 32px;
+  }
+
+  .question-hint {
+    font-size: .9rem;
+    color: var(--warm-grey);
+    margin-top: -20px;
+    margin-bottom: 28px;
+    font-style: italic;
+    min-height: 1em;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 12px; }
+
+  .option-btn {
+    background: var(--cream);
+    border: 1.5px solid rgba(212,104,124,0.2);
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    color: var(--charcoal);
+    cursor: pointer;
+    text-align: left;
+    transition: all .22s ease;
+    display: flex; align-items: center; gap: 14px;
+    position: relative; overflow: hidden;
+  }
+
+  .option-btn::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(212,104,124,0.08), transparent);
+    opacity: 0;
+    transition: opacity .22s ease;
+  }
+
+  .option-btn:hover { border-color: var(--rose); transform: translateX(4px); }
+  .option-btn:hover::before { opacity: 1; }
+
+  .option-btn.selected {
+    background: linear-gradient(135deg, rgba(212,104,124,0.12), rgba(245,221,228,0.5));
+    border-color: var(--rose);
+    color: var(--rose-dark);
+    font-weight: 600;
+  }
+
+  .option-dot {
+    width: 18px; height: 18px; flex-shrink: 0;
+    border: 1.5px solid var(--rose-light);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+  }
+
+  .option-btn.selected .option-dot {
+    background: var(--rose);
+    border-color: var(--rose);
+  }
+
+  .option-btn.selected .option-dot::after {
+    content: '';
+    width: 6px; height: 6px;
+    background: white;
+    border-radius: 50%;
+  }
+
+  /* Multi-select checkbox style */
+  .option-btn.multi .option-dot {
+    border-radius: 5px;
+  }
+
+  .option-btn.multi.selected .option-dot::after {
+    content: '✓';
+    font-size: 11px;
+    color: white;
+    width: auto; height: auto;
+    background: none;
+    border-radius: 0;
+  }
+
+  .multiselect-hint {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .12em;
+    color: var(--rose);
+    text-align: right;
+    margin-top: 10px;
+    text-transform: uppercase;
+  }
+
+  /* Number input */
+  .number-input-wrap {
+    display: flex; align-items: center; gap: 16px;
+  }
+
+  .number-input {
+    width: 120px;
+    padding: 14px 18px;
+    font-family: 'DM Mono', monospace;
+    font-size: 1.4rem;
+    color: var(--ink);
+    background: var(--cream);
+    border: 1.5px solid rgba(212,104,124,0.25);
+    border-radius: 12px;
+    outline: none;
+    transition: border-color .2s;
+    text-align: center;
+  }
+
+  .number-input:focus { border-color: var(--rose); }
+
+  .number-unit {
+    font-size: 1rem;
+    color: var(--warm-grey);
+    font-style: italic;
+  }
+
+  /* Navigation */
+  .nav-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 40px;
+  }
+
+  .btn-back {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--warm-grey);
+    background: none; border: none;
+    cursor: pointer;
+    transition: color .2s;
+    padding: 8px 0;
+  }
+
+  .btn-back:hover { color: var(--rose); }
+  .btn-back:disabled { opacity: 0.3; cursor: default; }
+
+  .btn-next {
+    background: linear-gradient(135deg, var(--rose-dark), var(--rose));
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 36px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    letter-spacing: .04em;
+    cursor: pointer;
+    transition: all .25s ease;
+    box-shadow: 0 4px 20px rgba(212,104,124,0.3);
+  }
+
+  .btn-next:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(212,104,124,0.4); }
+  .btn-next:disabled { opacity: 0.4; cursor: default; transform: none; box-shadow: none; }
+
+  /* Result */
+  #result-screen { display: none; animation: fadeUp .6s ease both; }
+
+  .result-card {
+    background: rgba(255,255,255,0.75);
+    backdrop-filter: blur(16px);
+    border-radius: 24px;
+    padding: 56px 44px;
+    border: 1px solid rgba(212,104,124,0.15);
+    box-shadow: 0 8px 60px rgba(212,104,124,0.08);
+    text-align: center;
+  }
+
+  .risk-badge {
+    display: inline-flex;
+    align-items: center; gap: 10px;
+    padding: 10px 24px;
+    border-radius: 50px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+
+  .risk-badge.high {
+    background: rgba(212,104,124,0.12);
+    color: var(--rose-dark);
+    border: 1px solid rgba(212,104,124,0.25);
+  }
+
+  .risk-badge.low {
+    background: rgba(143,173,160,0.12);
+    color: #4a7d6f;
+    border: 1px solid rgba(143,173,160,0.3);
+  }
+
+  .risk-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .high .risk-dot { background: var(--rose); }
+  .low  .risk-dot { background: var(--sage); }
+
+  .probability-circle {
+    width: 160px; height: 160px;
+    margin: 0 auto 32px;
+    position: relative;
+  }
+
+  .probability-circle svg {
+    width: 100%; height: 100%;
+    transform: rotate(-90deg);
+  }
+
+  .prob-track { fill: none; stroke: var(--blush); stroke-width: 8; }
+
+  .prob-ring {
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round;
+    /* dasharray and dashoffset set by JS */
+  }
+
+  .circle-label {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+
+  .circle-pct {
+    font-size: 2.2rem;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--ink);
+  }
+
+  .circle-sub {
+    font-size: .8rem;
+    color: var(--warm-grey);
+    font-style: italic;
+  }
+
+  .result-title {
+    font-size: 2rem;
+    font-weight: 300;
+    margin-bottom: 12px;
+    color: var(--ink);
+  }
+
+  .result-desc {
+    font-size: 1rem;
+    color: var(--warm-grey);
+    line-height: 1.8;
+    max-width: 420px;
+    margin: 0 auto 40px;
+  }
+
+  .disclaimer {
+    background: var(--sage-light);
+    border-radius: 12px;
+    padding: 18px 22px;
+    font-size: .88rem;
+    color: #4a7d6f;
+    line-height: 1.7;
+    text-align: left;
+    margin-bottom: 32px;
+  }
+
+  .disclaimer strong { font-weight: 600; }
+
+  .btn-restart {
+    background: none;
+    border: 1.5px solid var(--rose);
+    color: var(--rose);
+    border-radius: 50px;
+    padding: 13px 32px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: all .22s;
+  }
+
+  .btn-restart:hover { background: var(--rose); color: white; }
+
+  /* ── Poster ── */
+  .poster-wrap {
+    margin: 0 auto 32px;
+    text-align: center;
+  }
+  .poster-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--rose);
+    margin-bottom: 14px;
+  }
+  .poster-img {
+    width: 100%;
+    max-width: 460px;
+    border-radius: 16px;
+    border: 1px solid rgba(212,104,124,0.15);
+    box-shadow: 0 4px 32px rgba(212,104,124,0.08);
+    display: block;
+    margin: 0 auto;
+  }
+  .poster-caption {
+    font-size: .88rem;
+    color: var(--warm-grey);
+    font-style: italic;
+    margin-top: 12px;
+  }
+
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:none; } }
+  @keyframes fadeUp   { from { opacity:0; transform:translateY(20px); }  to { opacity:1; transform:none; } }
+  @keyframes slideOut { to { opacity:0; transform:translateX(-30px); } }
+  @keyframes slideIn  { from { opacity:0; transform:translateX(30px); } to { opacity:1; transform:none; } }
+
+  .slide-out { animation: slideOut .3s ease forwards; }
+  .slide-in  { animation: slideIn .35s ease both; }
+
+  @media (max-width: 560px) {
+    .question-card, .result-card { padding: 32px 24px; }
+    h1 { font-size: 2.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <p class="eyebrow">Women's Health · Screening Tool</p>
+    <h1>PCOS Risk<br><em>Assessment</em></h1>
+    <p class="subtitle">Answer a few questions about your lifestyle and symptoms to receive a personalised risk estimate.</p>
+  </header>
+
+  <!-- Form -->
+  <div id="form-screen">
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="step-label" id="step-label"></div>
+
+    <div class="question-card" id="question-card">
+      <p class="question-number" id="q-number"></p>
+      <p class="question-text"   id="q-text"></p>
+      <p class="question-hint"   id="q-hint"></p>
+      <div class="options"       id="q-options"></div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-back" id="btn-back" onclick="goBack()">← Back</button>
+      <button class="btn-next" id="btn-next" onclick="goNext()" disabled>Continue →</button>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div id="result-screen">
+    <div class="result-card">
+      <div class="risk-badge" id="risk-badge">
+        <span class="risk-dot"></span>
+        <span id="risk-label"></span>
+      </div>
+
+      <div class="probability-circle">
+        <svg viewBox="0 0 130 130" xmlns="http://www.w3.org/2000/svg">
+          <circle class="prob-track" cx="65" cy="65" r="52"/>
+          <circle class="prob-ring"  cx="65" cy="65" r="52" id="prob-ring"/>
+        </svg>
+        <div class="circle-label">
+          <span class="circle-pct" id="pct-label">0%</span>
+          <span class="circle-sub">probability</span>
+        </div>
+      </div>
+
+      <h2 class="result-title" id="result-title"></h2>
+      <p  class="result-desc"  id="result-desc"></p>
+
+      <div class="disclaimer">
+        <strong>⚠ Important:</strong> This tool uses a logistic regression model trained on survey data and is intended for <strong>informational purposes only</strong>. It is <em>not</em> a medical diagnosis. Please consult a qualified gynaecologist or endocrinologist for proper evaluation.
+      </div>
+
+      <div class="poster-wrap">
+        <p class="poster-label">PCOS Awareness</p>
+        <img src="poster.jpeg" alt="PCOS Awareness Poster" class="poster-img"/>
+        <p class="poster-caption">Strong Women. Healthy Hormones. Happy Life.</p>
+      </div>
+
+      <button class="btn-restart" onclick="restart()">Start Over</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+
+// ── Questions ──
+const questions = [
+  {
+    id: 'junk_food',
+    text: 'How often do you consume fast food or junk food?',
+    hint: null,
+    type: 'choice',
+    options: ['Daily', '2–3 times/week', 'Occasionally', 'Rarely']
+  },
+  {
+    id: 'healthy_diet',
+    text: 'Do you consume fruits and vegetables daily?',
+    hint: null,
+    type: 'yesno'
+  },
+  {
+    id: 'exercise',
+    text: 'How often do you exercise in a week?',
+    hint: null,
+    type: 'choice',
+    options: ['Daily', '3–5 days', '1–2 days', 'Never']
+  },
+  {
+    id: 'sleep',
+    text: 'Average sleep duration per night?',
+    hint: 'Enter hours e.g. 6, 7, 8',
+    type: 'number',
+    unit: 'hours',
+    min: 3,
+    max: 12
+  },
+  {
+    id: 'stress',
+    text: 'What are your sources of stress?',
+    hint: 'Select all that apply',
+    type: 'multiselect',
+    options: ['Academics', 'Family', 'Health', 'Career/Future', 'Personal reasons']
+  },
+  {
+    id: 'irregular_periods',
+    text: 'Do you experience irregular or delayed menstrual cycles?',
+    hint: null,
+    type: 'yesno'
+  },
+  {
+    id: 'acne',
+    text: 'Do you experience acne or oily skin frequently?',
+    hint: null,
+    type: 'yesno'
+  },
+  {
+    id: 'hair_fall',
+    text: 'Do you experience hair fall or thinning of scalp hair?',
+    hint: null,
+    type: 'yesno'
+  },
+  {
+    id: 'weight_gain',
+    text: 'Have you experienced unexplained weight gain or difficulty losing weight?',
+    hint: null,
+    type: 'yesno'
+  },
+  {
+    id: 'fatigue',
+    text: 'Do you feel physically tired or low in energy most of the time?',
+    hint: null,
+    type: 'yesno'
+  }
+];
+
+// ── State ──
+let currentStep = 0;
+const answers = {};
+
+// ── Render ──
+function render() {
+  const q     = questions[currentStep];
+  const total = questions.length;
+
+  document.getElementById('progress-fill').style.width = (currentStep / total * 100) + '%';
+  document.getElementById('step-label').textContent    = `Question ${currentStep + 1} of ${total}`;
+  document.getElementById('q-number').textContent      = `0${currentStep + 1}`;
+  document.getElementById('q-text').textContent        = q.text;
+  document.getElementById('q-hint').textContent        = q.hint || '';
+  document.getElementById('btn-back').disabled         = currentStep === 0;
+
+  const container = document.getElementById('q-options');
+  container.innerHTML = '';
+
+  // Remove old multiselect hint if any
+  const oldHint = document.getElementById('multi-hint');
+  if (oldHint) oldHint.remove();
+
+  if (q.type === 'yesno') {
+    ['Yes', 'No'].forEach(label => {
+      container.appendChild(makeBtn(label, q.id, label === 'Yes' ? 1 : 0, false));
+    });
+
+  } else if (q.type === 'choice') {
+    q.options.forEach(val => {
+      container.appendChild(makeBtn(val, q.id, val, false));
+    });
+
+  } else if (q.type === 'number') {
+    const wrap = document.createElement('div');
+    wrap.className = 'number-input-wrap';
+
+    const inp = document.createElement('input');
+    inp.type        = 'number';
+    inp.className   = 'number-input';
+    inp.min         = q.min;
+    inp.max         = q.max;
+    inp.placeholder = '7';
+    if (answers[q.id] !== undefined) inp.value = answers[q.id];
+
+    inp.addEventListener('input', () => {
+      const v = parseFloat(inp.value);
+      if (!isNaN(v) && v >= q.min && v <= q.max) {
+        answers[q.id] = v;
+      } else {
+        delete answers[q.id];
+      }
+      updateNext();
+    });
+
+    const unit = document.createElement('span');
+    unit.className   = 'number-unit';
+    unit.textContent = q.unit;
+
+    wrap.appendChild(inp);
+    wrap.appendChild(unit);
+    container.appendChild(wrap);
+
+  } else if (q.type === 'multiselect') {
+    if (!Array.isArray(answers[q.id])) answers[q.id] = [];
+
+    q.options.forEach(label => {
+      const btn = makeBtn(label, q.id, label, true);
+      if (answers[q.id].includes(label)) btn.classList.add('selected');
+
+      btn.addEventListener('click', () => {
+        const arr = answers[q.id];
+        if (arr.includes(label)) {
+          answers[q.id] = arr.filter(x => x !== label);
+          btn.classList.remove('selected');
+        } else {
+          answers[q.id] = [...arr, label];
+          btn.classList.add('selected');
+        }
+        updateNext();
+      });
+
+      container.appendChild(btn);
+    });
+
+    const hint = document.createElement('p');
+    hint.id          = 'multi-hint';
+    hint.className   = 'multiselect-hint';
+    hint.textContent = 'Select all that apply';
+    container.after(hint);
+  }
+
+  updateNext();
+}
+
+function makeBtn(label, qId, value, isMulti) {
+  const btn = document.createElement('button');
+  btn.className = 'option-btn' + (isMulti ? ' multi' : '');
+
+  const dot = document.createElement('span');
+  dot.className = 'option-dot';
+
+  const txt = document.createElement('span');
+  txt.textContent = label;
+
+  btn.appendChild(dot);
+  btn.appendChild(txt);
+
+  if (!isMulti) {
+    if (answers[qId] === value) btn.classList.add('selected');
+    btn.addEventListener('click', () => {
+      answers[qId] = value;
+      document.querySelectorAll('#q-options .option-btn:not(.multi)').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      updateNext();
+    });
+  }
+
+  return btn;
+}
+
+function updateNext() {
+  const q = questions[currentStep];
+  let ok = false;
+  if (q.type === 'multiselect') {
+    ok = Array.isArray(answers[q.id]) && answers[q.id].length > 0;
+  } else if (q.type === 'number') {
+    ok = answers[q.id] !== undefined && !isNaN(answers[q.id]);
+  } else {
+    ok = answers[q.id] !== undefined;
+  }
+  document.getElementById('btn-next').disabled = !ok;
+}
+
+// ── Navigation ──
+function goNext() {
+  const card = document.getElementById('question-card');
+  if (currentStep < questions.length - 1) {
+    card.classList.add('slide-out');
+    setTimeout(() => {
+      card.classList.remove('slide-out');
+      currentStep++;
+      render();
+      card.classList.add('slide-in');
+      setTimeout(() => card.classList.remove('slide-in'), 350);
+    }, 280);
+  } else {
+    showResult();
+  }
+}
+
+function goBack() {
+  if (currentStep > 0) {
+    const card = document.getElementById('question-card');
+    card.classList.add('slide-out');
+    setTimeout(() => {
+      card.classList.remove('slide-out');
+      currentStep--;
+      render();
+      card.classList.add('slide-in');
+      setTimeout(() => card.classList.remove('slide-in'), 350);
+    }, 280);
+  }
+}
+
+// ── Result ──
+async function showResult() {
+  document.getElementById('progress-fill').style.width = '100%';
+  document.getElementById('btn-next').disabled = true;
+
+  const sleepVal    = answers.sleep;
+  const sleepMapped = sleepVal <= 5.5 ? '5-6 hrs' : String(Math.round(sleepVal));
+  const primaryStress = Array.isArray(answers.stress) ? answers.stress[0] : answers.stress;
+
+  const payload = {
+    '6. How often do you consume fast food or junk food?':                           answers.junk_food,
+    '7. Do you consume fruits and vegetables daily?':                                answers.healthy_diet,
+    '9. How often do you exercise in a week?':                                       answers.exercise,
+    '10. Average sleep duration per night: _____ hours':                             sleepMapped,
+    '11. What is your primary source of stress?':                                    primaryStress,
+    '13. Do you experience irregular or delayed menstrual cycles?':                  answers.irregular_periods,
+    '15. Do you experience acne or oily skin frequently?':                           answers.acne,
+    '17. Do you experience hair fall or thinning of scalp hair?':                    answers.hair_fall,
+    '18. Have you experienced unexplained weight gain or difficulty losing weight?':  answers.weight_gain,
+    '19. Do you feel physically tired or low in energy most of the time?':           answers.fatigue
+  };
+
+  let prob, prediction;
+
+  try {
+    const res  = await fetch('/api/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    prob       = data.probability / 100;
+    prediction = data.prediction;
+  } catch (e) {
+    console.warn('Backend unavailable — using local scoring');
+    prob       = localScore(answers);
+    prediction = prob >= 0.4 ? 1 : 0;
+  }
+
+  const pct  = Math.round(prob * 100);
+  const high = prediction === 1;
+
+  // Show result screen
+  document.getElementById('form-screen').style.display = 'none';
+  document.getElementById('result-screen').style.display = 'block';
+
+  // Badge
+  const badge = document.getElementById('risk-badge');
+  badge.className = 'risk-badge ' + (high ? 'high' : 'low');
+  document.getElementById('risk-label').textContent = high ? 'Elevated Risk Detected' : 'Lower Risk Detected';
+
+  // Text
+  document.getElementById('result-title').textContent = high
+    ? 'Your responses suggest elevated risk.'
+    : 'Your responses suggest lower risk.';
+  document.getElementById('result-desc').textContent = high
+    ? 'Several of your lifestyle and symptom indicators are associated with PCOS/PCOD. We recommend discussing these findings with a healthcare professional.'
+    : 'Your responses show fewer PCOS risk indicators. Continue maintaining a healthy lifestyle, and consult a doctor if you have concerns.';
+
+  // Ring — r=52, so circumference = 2 * π * 52 = 326.726
+  const C    = 2 * Math.PI * 52; // 326.726
+  const ring = document.getElementById('prob-ring');
+  ring.style.strokeDasharray  = C;
+  ring.style.strokeDashoffset = C;         // start fully hidden
+  ring.style.stroke           = high ? '#d4687c' : '#8fada0';
+  ring.style.transition       = 'none';
+
+  // Counter
+  let count = 0;
+  const step = pct / (1400 / 16);
+  const counter = setInterval(() => {
+    count = Math.min(count + step, pct);
+    document.getElementById('pct-label').textContent = Math.round(count) + '%';
+    if (count >= pct) clearInterval(counter);
+  }, 16);
+
+  // Animate ring after a short delay so transition kicks in
+  setTimeout(() => {
+    ring.style.transition      = 'stroke-dashoffset 1.5s cubic-bezier(.4,0,.2,1)';
+    ring.style.strokeDashoffset = C * (1 - prob); // correct: 25% → offset = 75% of C
+  }, 100);
+}
+
+// ── Local fallback scoring ──
+function localScore(a) {
+  let logit = -3.8;
+  const junkW   = { 'Daily': 1.4, '2–3 times/week': 0.9, 'Occasionally': 0.3, 'Rarely': 0 };
+  const exW     = { 'Daily': -0.6, '3–5 days': -0.3, '1–2 days': 0.2, 'Never': 0.7 };
+  const stressW = { 'Academics': 0.4, 'Family': 0.4, 'Health': 0.8, 'Career/Future': 0.5, 'Personal reasons': 0.3 };
+
+  if (junkW[a.junk_food]  !== undefined) logit += junkW[a.junk_food];
+  if (a.healthy_diet === 0)              logit += 0.5;
+  if (exW[a.exercise]     !== undefined) logit += exW[a.exercise];
+
+  const hrs = parseFloat(a.sleep);
+  if (!isNaN(hrs)) logit += hrs < 6 ? 0.7 : hrs > 8 ? 0.3 : -0.2;
+
+  const stress = Array.isArray(a.stress) ? a.stress[0] : a.stress;
+  if (stressW[stress] !== undefined) logit += stressW[stress];
+
+  if (a.irregular_periods === 1) logit += 1.8;
+  if (a.acne              === 1) logit += 1.1;
+  if (a.hair_fall         === 1) logit += 1.0;
+  if (a.weight_gain       === 1) logit += 1.2;
+  if (a.fatigue           === 1) logit += 0.8;
+
+  return 1 / (1 + Math.exp(-logit));
+}
+
+// ── Restart ──
+function restart() {
+  Object.keys(answers).forEach(k => delete answers[k]);
+  currentStep = 0;
+  document.getElementById('result-screen').style.display = 'none';
+  document.getElementById('form-screen').style.display   = 'block';
+  document.getElementById('btn-next').disabled = true;
+  render();
+}
+
+// ── Init ──
+render();
+</script>
+</body>
+</html>
